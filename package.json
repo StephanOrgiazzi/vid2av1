@@ -1,0 +1,29 @@
+{
+  "name": "vid2av1-gui",
+  "description": "Windows Tauri GUI for AV1 video conversion with FFmpeg (optimized for NVIDIA RTX workflows).",
+  "private": true,
+  "version": "0.1.0",
+  "keywords": [
+    "av1",
+    "ffmpeg",
+    "tauri",
+    "windows",
+    "nvidia",
+    "rtx",
+    "video"
+  ],
+  "type": "module",
+  "scripts": {
+    "scripts:build": "tsc -p scripts/tsconfig.json",
+    "ffmpeg:ensure": "node scripts/dist/ensure-ffmpeg.mjs",
+    "ui:build": "tsc -p ui/tsconfig.json",
+    "ts:build": "npm run ui:build && npm run scripts:build",
+    "dev": "npm run ts:build && npm run ffmpeg:ensure && tauri dev",
+    "build": "npm run ts:build && npm run ffmpeg:ensure && tauri build --no-bundle && node scripts/dist/stage-portable.mjs"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.2.0",
+    "@types/node": "^24.3.0",
+    "typescript": "^5.9.2"
+  }
+}

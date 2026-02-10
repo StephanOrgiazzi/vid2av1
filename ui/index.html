@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>vid2av1</title>
+  <link rel="stylesheet" href="./src/styles.css" />
+</head>
+
+<body>
+  <main id="appRoot" class="app" aria-label="Video conversion">
+    <header class="hero">
+      <p class="eyebrow">AV1 video converter</p>
+      <h1>vid2av1</h1>
+      <p class="subtitle">Convert one or multiple videos to AV1</p>
+    </header>
+
+    <section class="layout" aria-label="Conversion workspace">
+      <article class="panel primary-panel">
+        <h2>Convert</h2>
+
+        <label for="inputPath">Input files</label>
+        <div class="row">
+          <input id="inputPath" type="text" readonly placeholder="Choose one or more video files"
+            aria-describedby="inputHelp" />
+          <button id="browseInput" type="button">Browse</button>
+        </div>
+        <p id="inputHelp" class="hint">Supports multi-select queue conversion.</p>
+
+        <p id="encoderStatus" class="encoder-status" role="status" aria-live="polite"></p>
+
+        <div class="action-row">
+          <button id="convert" type="button">Convert</button>
+          <button id="cancel" type="button" hidden>Cancel</button>
+        </div>
+
+        <div class="progress-wrap" aria-live="polite">
+          <label for="progress">Progress</label>
+          <div class="progress-track">
+            <progress id="progress" max="100" value="0"></progress>
+            <span id="progressText">0%</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel status-panel">
+        <h2>Activity</h2>
+        <pre id="status" aria-live="polite"></pre>
+      </article>
+    </section>
+  </main>
+
+  <script type="module" src="./dist/src/main.js"></script>
+</body>
+
+</html>

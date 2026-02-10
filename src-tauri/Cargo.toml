@@ -1,0 +1,14 @@
+[package]
+name = "vid2av1-gui"
+version = "0.1.0"
+description = "Simple AV1 conversion GUI"
+authors = ["you"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2.0.2", features = [] }
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+tauri = { version = "2.2.0", features = [] }
+tauri-plugin-dialog = "2"
