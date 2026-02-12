@@ -124,3 +124,6 @@ Build output:
 
 ### Open source
 Contributions are welcome through issues and pull requests.
+
+## License
+This project is licensed under the MIT License. See `LICENSE` for details.
