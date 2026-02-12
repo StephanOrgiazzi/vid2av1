@@ -1,6 +1,6 @@
 import type { AppElements } from "./dom.js";
 import { isCancellationErrorMessage, isNoActiveConversionErrorMessage } from "./conversion-errors.js";
-import { basename, toErrorMessage } from "./format.js";
+import { basename, toErrorMessage, toRawErrorMessage } from "./format.js";
 import { ProgressPresenter } from "./progress-presenter.js";
 import {
   deduplicatePaths,
@@ -24,7 +24,6 @@ export class ConvertApp {
   private isLoadingEncoder = false;
   private encoderLoadPromise: Promise<void> | null = null;
   private selectedAv1Encoder: string | null = null;
-  private isQueueItemRunning = false;
   private detachProgressListener: (() => void | Promise<void>) | null = null;
 
   constructor(
@@ -153,7 +152,6 @@ export class ConvertApp {
     this.uiState.setProgress(0);
     this.progressPresenter.reset();
     this.cancelRequested = false;
-    this.isQueueItemRunning = false;
     this.setConverting(true);
 
     const queueLength = this.queuedInputPaths.length;
@@ -196,8 +194,9 @@ export class ConvertApp {
           this.uiState.appendStatus(`Video bitrate: ${result.videoBitrateKbps} kbps`);
           this.uiState.appendStatus(`Audio bitrate: ${result.audioBitrateKbps} kbps`);
         } catch (error) {
+          const rawMessage = toRawErrorMessage(error);
           const message = toErrorMessage(error);
-          if (isCancellationErrorMessage(message) || this.cancelRequested) {
+          if (isCancellationErrorMessage(rawMessage) || this.cancelRequested) {
             this.cancelRequested = true;
             this.uiState.appendStatus("Canceled by user.");
             break;
@@ -205,9 +204,6 @@ export class ConvertApp {
 
           failureCount += 1;
           this.uiState.appendStatus(`Failed: ${message}`);
-        } finally {
-          this.isQueueItemRunning = false;
-          this.syncButtonState();
         }
       }
 
@@ -236,7 +232,6 @@ export class ConvertApp {
     }
 
     this.cancelRequested = true;
-    this.isQueueItemRunning = false;
     this.progressPresenter.reset();
     this.uiState.setProgress(0, "Canceling...");
     this.syncButtonState();
@@ -245,8 +240,9 @@ export class ConvertApp {
     try {
       await this.tauriApi.cancelConversion();
     } catch (error) {
+      const rawMessage = toRawErrorMessage(error);
       const message = toErrorMessage(error);
-      if (!isNoActiveConversionErrorMessage(message)) {
+      if (!isNoActiveConversionErrorMessage(rawMessage)) {
         this.uiState.appendStatus(`Cancel request failed: ${message}`);
       }
     }
@@ -257,18 +253,12 @@ export class ConvertApp {
       return;
     }
 
-    if (!this.isQueueItemRunning) {
-      this.isQueueItemRunning = true;
-      this.syncButtonState();
-    }
-
     this.progressPresenter.queue(payload);
   }
 
   private setConverting(value: boolean): void {
     if (!value) {
       this.cancelRequested = false;
-      this.isQueueItemRunning = false;
     }
 
     this.isConverting = value;

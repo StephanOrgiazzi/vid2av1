@@ -26,14 +26,15 @@ fn terminate_pid(pid: u32) {
     }
 }
 
-pub fn terminate_all_active_ffmpeg(app: &AppHandle) {
+pub fn terminate_all_active_ffmpeg(app: &AppHandle) -> Result<(), String> {
     request_cancel(app);
-    set_active_conversion_cancel_requested(app, true);
+    set_active_conversion_cancel_requested(app, true)?;
 
-    let pids = collect_registered_ffmpeg_pids(app);
+    let pids = collect_registered_ffmpeg_pids(app)?;
     for pid in pids {
         terminate_pid(pid);
     }
 
-    clear_registered_ffmpeg_pids(app);
+    clear_registered_ffmpeg_pids(app)?;
+    Ok(())
 }

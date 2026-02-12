@@ -5,3 +5,4 @@ node_modules/
 src-tauri/target/
 vendor/ffmpeg/bin/
 .vscode/
+release/

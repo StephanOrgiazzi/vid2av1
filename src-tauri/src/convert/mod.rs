@@ -6,7 +6,7 @@ use tauri::AppHandle;
 
 use crate::model::{ConvertRequest, ConvertSummary};
 
-use self::cancellation::CANCELED_BY_USER_ERROR;
+use self::cancellation::{abort_if_cancel_requested, is_canceled_by_user_error};
 use self::ffmpeg_runner::run_ffmpeg_with_progress;
 use self::planning::{build_conversion_plan, build_encode_args};
 
@@ -17,7 +17,7 @@ pub fn do_convert(app: &AppHandle, request: ConvertRequest) -> Result<ConvertSum
     let mut last_error = String::new();
 
     for encoder in &plan.encoder_candidates {
-        cancellation::abort_if_cancel_requested(app)?;
+        abort_if_cancel_requested(app)?;
 
         let args = build_encode_args(&plan, encoder);
         match run_ffmpeg_with_progress(app, &plan.ffmpeg_path, &args, plan.duration_sec, "Encode") {
@@ -26,7 +26,7 @@ pub fn do_convert(app: &AppHandle, request: ConvertRequest) -> Result<ConvertSum
                 break;
             }
             Err(error) => {
-                if error == CANCELED_BY_USER_ERROR {
+                if is_canceled_by_user_error(&error) {
                     return Err(error);
                 }
                 last_error = format!("{encoder}: {error}");

@@ -3,13 +3,12 @@
 mod commands;
 mod convert;
 mod encoder_service;
+mod error_protocol;
 mod ffmpeg;
 mod model;
 mod state;
 
-use commands::{
-    cancel_conversion, convert_video, pick_auto_av1_encoder, show_main_window,
-};
+use commands::{cancel_conversion, convert_video, pick_auto_av1_encoder, show_main_window};
 use state::{
     terminate_all_active_ffmpeg, ActiveConversionControl, ActiveFfmpegPids, Av1EncoderCache,
     GlobalCancelFlag,
@@ -25,7 +24,9 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .on_window_event(|window, event| {
             if matches!(event, tauri::WindowEvent::CloseRequested { .. }) {
-                terminate_all_active_ffmpeg(window.app_handle());
+                if let Err(error) = terminate_all_active_ffmpeg(window.app_handle()) {
+                    eprintln!("Failed to terminate active ffmpeg processes: {error}");
+                }
             }
         })
         .invoke_handler(tauri::generate_handler![

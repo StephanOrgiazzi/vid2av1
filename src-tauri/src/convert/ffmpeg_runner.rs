@@ -6,14 +6,13 @@ use std::time::{Duration, Instant};
 
 use tauri::{AppHandle, Emitter};
 
+use crate::error_protocol::error_canceled_by_user;
 use crate::ffmpeg::hidden_command;
 use crate::model::ProgressEvent;
 use crate::state::{
     is_cancel_requested, register_active_conversion, register_ffmpeg_pid,
     unregister_active_conversion, unregister_ffmpeg_pid,
 };
-
-use super::cancellation::CANCELED_BY_USER_ERROR;
 
 const PROGRESS_EMIT_INTERVAL: Duration = Duration::from_millis(120);
 const PROGRESS_EMIT_PERCENT_STEP: f64 = 0.25;
@@ -25,7 +24,9 @@ struct FfmpegPidGuard {
 
 impl Drop for FfmpegPidGuard {
     fn drop(&mut self) {
-        unregister_ffmpeg_pid(&self.app, self.pid);
+        if let Err(error) = unregister_ffmpeg_pid(&self.app, self.pid) {
+            eprintln!("Failed to unregister ffmpeg pid {}: {error}", self.pid);
+        }
     }
 }
 
@@ -36,7 +37,12 @@ struct ActiveConversionGuard {
 
 impl Drop for ActiveConversionGuard {
     fn drop(&mut self) {
-        unregister_active_conversion(&self.app, self.pid);
+        if let Err(error) = unregister_active_conversion(&self.app, self.pid) {
+            eprintln!(
+                "Failed to unregister active conversion {}: {error}",
+                self.pid
+            );
+        }
     }
 }
 
@@ -167,7 +173,7 @@ pub fn run_ffmpeg_with_progress(
 
     if !status.success() {
         if is_cancel_requested(app) {
-            return Err(CANCELED_BY_USER_ERROR.to_string());
+            return Err(error_canceled_by_user());
         }
         return Err(format!("ffmpeg failed: {stderr_text}"));
     }

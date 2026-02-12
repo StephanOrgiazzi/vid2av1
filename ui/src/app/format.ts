@@ -1,6 +1,11 @@
+import { toDisplayErrorMessage } from "./conversion-errors.js";
 import type { ConvertProgressPayload } from "./types.js";
 
 export function toErrorMessage(error: unknown): string {
+  return toDisplayErrorMessage(toRawErrorMessage(error));
+}
+
+export function toRawErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 

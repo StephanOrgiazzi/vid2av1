@@ -26,7 +26,7 @@ pub async fn convert_video(
     app: AppHandle,
     request: ConvertRequest,
 ) -> Result<ConvertSummary, String> {
-    clear_cancel_requested(&app);
+    clear_cancel_requested(&app)?;
     let app_clone = app.clone();
     run_blocking("Conversion", move || do_convert(&app_clone, request)).await
 }
