@@ -4,6 +4,8 @@ Reduce video file size by half. Every time.
 
 Stop wrestling with converter settings and codec choices. `vid2av1` does the hard part for you, using AV1 to consistently target a video file size that is **50% of the original**.
 
+![vid2av1 conversion overview](image.jpg)
+
 `vid2av1` is an open source Windows desktop app built for simplicity and speed, with best-in-class performance on NVIDIA RTX GPUs.
 In most real-world cases, the loss in visual fidelity is minimal and often almost imperceptible thanks to AV1 efficiency.
 Under the hood, it leverages FFmpeg and modern AV1 encoders.
