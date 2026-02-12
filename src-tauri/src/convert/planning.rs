@@ -5,8 +5,8 @@ use tauri::AppHandle;
 
 use crate::encoder_service::get_available_av1_encoders;
 use crate::ffmpeg::{
-    default_output_for_input, read_audio_bitrate_kbps, read_ffprobe_duration,
-    resolve_encoder_candidates, resolve_tool_path, video_rate_args,
+    default_output_for_input, read_probe_metadata, resolve_encoder_candidates, resolve_tool_path,
+    video_rate_args,
 };
 use crate::model::ConvertRequest;
 
@@ -55,15 +55,15 @@ pub fn build_conversion_plan(
         .len();
     let target_size_bytes = input_size / 2;
 
-    let duration_sec = read_ffprobe_duration(&ffprobe_path, &request.input_path)?;
-    abort_if_cancel_requested(app)?;
-
-    let audio_bitrate_kbps = read_audio_bitrate_kbps(
+    let probe_metadata = read_probe_metadata(
         &ffprobe_path,
         &request.input_path,
         AUDIO_BITRATE_FALLBACK_KBPS,
     )?;
     abort_if_cancel_requested(app)?;
+
+    let duration_sec = probe_metadata.duration_sec;
+    let audio_bitrate_kbps = probe_metadata.audio_bitrate_kbps;
 
     let video_bitrate_kbps =
         compute_video_bitrate_kbps(target_size_bytes, duration_sec, audio_bitrate_kbps)?;
